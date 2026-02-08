@@ -1,0 +1,676 @@
+/* ===================================
+   TOM CITY EDITION - STYLE SHEET
+   Theme Color: #2f96f0 (Professional Blue)
+   Built by: html-ramu
+   =================================== */
+
+/* GLOBAL RESET */
+* { 
+    box-sizing: border-box; 
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary-blue: #2f96f0;
+    --accent-green: #25d366;
+    --bg-gray: #f0f0f0;
+    --text-dark: #333;
+    --text-light: #666;
+    --white: #ffffff;
+    --border-color: #ddd;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-gray);
+    overflow-x: hidden;
+    color: var(--text-dark);
+}
+
+/* ===================================
+   TOP BARS (STICKY HEADERS)
+   =================================== */
+
+.top-bar-1, .top-bar-2 {
+    position: sticky;
+    background: var(--white);
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.top-bar-1 {
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+    font-size: 14px;
+    height: 35px;
+}
+
+.top-bar-2 {
+    top: 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+    height: 55px;
+}
+
+/* Date Display */
+.date-display {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* Social Icons */
+.social-icons {
+    display: flex;
+    gap: 12px;
+}
+
+.social-icons a {
+    font-size: 20px;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.social-icons a:hover {
+    transform: scale(1.1);
+}
+
+/* Logo Area */
+.logo-area img {
+    height: 45px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.logo-area img:hover {
+    opacity: 0.8;
+}
+
+/* Live Indicator */
+.live-area {
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.live-indicator {
+    color: #ff0000;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dot {
+    height: 8px;
+    width: 8px;
+    background-color: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Menu Button */
+.menu-btn {
+    font-size: 26px;
+    color: var(--primary-blue);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.menu-btn:hover {
+    color: #1a75c7;
+}
+
+/* ===================================
+   SIDEBAR MENU
+   =================================== */
+
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: var(--white);
+    overflow-x: hidden;
+    transition: width 0.3s ease;
+    padding-top: 60px;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar a {
+    padding: 15px 30px;
+    text-decoration: none;
+    font-size: 18px;
+    color: var(--text-dark);
+    display: block;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar a:hover {
+    background-color: #f5f5f5;
+}
+
+.sidebar .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 36px;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+/* ===================================
+   CATEGORY BAR
+   =================================== */
+
+.category-bar {
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    height: 48px;
+    position: sticky;
+    top: 90px;
+    z-index: 900;
+}
+
+.fixed-home {
+    padding: 12px 18px;
+    border-right: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.2s ease;
+}
+
+.fixed-home:hover {
+    background-color: #f5f5f5;
+}
+
+.cat-scroll-area {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.cat-scroll-area::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-item {
+    display: inline-block;
+    padding: 10px 18px;
+    text-decoration: none;
+    color: var(--text-dark);
+    border-radius: 5px;
+    margin: 0 5px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.cat-item:hover {
+    background-color: #e3f2fd;
+}
+
+.cat-item.active {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+/* ===================================
+   ADVERTISEMENT MARQUEE
+   =================================== */
+
+.ad-marquee {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    overflow: hidden;
+    white-space: nowrap;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.marquee-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll 20s linear infinite;
+}
+
+@keyframes scroll {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+
+/* ===================================
+   CONTROL BAR
+   =================================== */
+
+.control-bar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #e8e8e8;
+    padding: 12px 10px;
+    position: sticky;
+    top: 138px;
+    z-index: 900;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.control-bar button,
+.pdf-btn {
+    padding: 8px 15px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.control-bar button:hover {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+}
+
+.control-bar button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.control-bar button:disabled:hover {
+    background-color: var(--white);
+    color: var(--text-dark);
+}
+
+.pdf-btn {
+    color: #d32f2f;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.pdf-btn:hover {
+    background-color: #d32f2f;
+    color: var(--white);
+    border-color: #d32f2f;
+}
+
+.page-indicator {
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--text-dark);
+}
+
+/* ===================================
+   VIEWER CONTAINER
+   =================================== */
+
+.viewer-container {
+    min-height: 70vh;
+    text-align: center;
+    padding: 10px 5px 20px 5px;
+    position: relative;
+    background-color: var(--bg-gray);
+}
+
+.viewer-container img {
+    width: 100%;
+    max-width: 1200px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    transition: opacity 0.3s ease;
+}
+
+#loadingMsg {
+    padding: 60px 20px;
+    color: var(--text-light);
+    font-size: 18px;
+}
+
+/* Navigation Arrows (Side) */
+.nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--white);
+    border: none;
+    padding: 15px 12px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 950;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.left-arrow {
+    left: 8px;
+}
+
+.right-arrow {
+    right: 8px;
+}
+
+.nav-arrow:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ===================================
+   MODALS (GENERIC)
+   =================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: 10% auto;
+    padding: 30px;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-content h3 {
+    margin-bottom: 20px;
+    color: var(--primary-blue);
+    font-size: 24px;
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+    color: var(--text-dark);
+}
+
+/* Info Text Styling */
+.info-text p {
+    line-height: 1.8;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+    font-size: 16px;
+}
+
+.info-text strong {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* ===================================
+   CLIPPER OVERLAY
+   =================================== */
+
+.clipper-overlay {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    flex-direction: column;
+}
+
+.clipper-header {
+    background: var(--white);
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.clipper-logo {
+    height: 40px;
+}
+
+.header-spacer {
+    width: 35px;
+}
+
+.clipper-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    color: var(--text-dark);
+    line-height: 1;
+}
+
+.clipper-body {
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+    background-color: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.clipper-controls {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background: #111;
+}
+
+.action-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s ease;
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    transform: scale(1.05);
+}
+
+.share-btn {
+    background-color: var(--accent-green);
+}
+
+.download-btn {
+    background-color: var(--primary-blue);
+}
+
+.clipper-footer-text {
+    background: #000;
+    color: #888;
+    text-align: center;
+    font-size: 11px;
+    padding: 8px 10px;
+    font-family: sans-serif;
+    border-top: 1px solid #333;
+}
+
+/* Hide arrows in clipper mode */
+.clipper-overlay .nav-arrow {
+    display: none;
+}
+
+/* ===================================
+   STATIC FOOTER
+   =================================== */
+
+.static-footer {
+    background-color: #222;
+    color: var(--white);
+    text-align: center;
+    padding: 25px 15px;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.static-footer p {
+    margin: 10px 0;
+    font-size: 15px;
+    color: #cccccc;
+    line-height: 1.6;
+}
+
+.dev-credit {
+    color: var(--primary-blue) !important;
+    font-weight: bold;
+    font-size: 16px !important;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+@media (max-width: 768px) {
+    .top-bar-1 {
+        font-size: 12px;
+    }
+    
+    .social-icons a {
+        font-size: 18px;
+    }
+    
+    .logo-area img {
+        height: 35px;
+    }
+    
+    .control-bar button,
+    .pdf-btn {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+    
+    .nav-arrow {
+        padding: 12px 8px;
+        font-size: 20px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cat-item {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    .action-btn {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+}
+
+/* ===================================
+   PRINT STYLES
+   =================================== */
+
+@media print {
+    .top-bar-1,
+    .top-bar-2,
+    .sidebar,
+    .category-bar,
+    .ad-marquee,
+    .control-bar,
+    .nav-arrow,
+    .static-footer {
+        display: none !important;
+    }
+    
+    .viewer-container img {
+        max-width: 100%;
+        box-shadow: none;
+    }
+}
+
+/* ===================================
+   SMOOTH SCROLLING
+   =================================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ===================================
+   SELECTION STYLING
+   =================================== */
+
+::selection {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+::-moz-selection {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}

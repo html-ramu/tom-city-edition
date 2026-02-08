@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+    
+    <meta name="description" content="Tom City Edition - Fast and reliable Telugu online e-paper. Covering local news, National and International updates.">
+    <meta name="keywords" content="Tom City Edition, Telugu ePaper, Telugu News, Tom City News, Digital Newspaper">
+    <meta name="author" content="html-ramu">
+
+    <meta property="og:title" content="Tom City Edition ePaper - Quality Telugu Journalism">
+    <meta property="og:description" content="Read the latest Telugu news daily on our mobile-friendly digital platform.">
+    <meta property="og:image" content="https://tom-city-edition.in/assets/latest-cover.jpg?v=initial">
+    <meta property="og:url" content="https://tom-city-edition.in/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <title>Tom City Edition ePaper</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Cropper.js for Image Clipping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    
+    <!-- OneSignal Push Notifications -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "YOUR_ONESIGNAL_APP_ID", // Replace with actual OneSignal App ID
+        });
+      });
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Bar 1: Website Name & Social Icons -->
+    <div class="top-bar-1">
+        <div class="date-display">📰 tom-city-edition.in</div>
+        <div class="social-icons">
+            <a href="https://youtube.com/tom-city-edition" target="_blank"><i class="fa-brands fa-youtube" style="color: #ff0000;"></i></a>
+            <a href="https://facebook.com/tom-city-edition" target="_blank"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i></a>
+            <a href="https://wa.me/1234567890" target="_blank"><i class="fa-brands fa-whatsapp" style="color: #25d366;"></i></a>
+        </div>
+    </div>
+
+    <!-- Top Bar 2: Logo, Date, Live Indicator & Menu -->
+    <div class="top-bar-2">
+        <div class="logo-area">
+            <img src="assets/logo.png" alt="Tom City Edition" id="logoClick">
+        </div>
+        <div class="live-area">
+            <span id="liveDate">Today</span>
+            <a href="https://youtube.com/tom-city-edition" target="_blank" class="live-indicator">
+                <span class="dot"></span> LIVE
+            </a>
+        </div>
+        <div class="menu-btn" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar" id="sidebar">
+        <div class="close-btn" onclick="toggleMenu()">&times;</div>
+        <a href="#" onclick="openInfoModal('aboutModal')">ℹ️ About Us</a>
+        <a href="#" onclick="openInfoModal('contactModal')">📞 Contact Us</a>
+        <a href="#" onclick="openInfoModal('advertiseModal')">📢 Advertise</a>
+        <a href="#" onclick="openInfoModal('privacyModal')">🔒 Privacy Policy</a>
+    </div>
+
+    <!-- Category Bar -->
+    <div class="category-bar">
+        <div class="cat-item fixed-home" onclick="resetViewer()">🏠</div>
+        <div class="cat-scroll-area">
+            <a href="#" target="_blank" class="cat-item" onclick="setActive(this)">జాతీయం</a>
+            <a href="#" target="_blank" class="cat-item" onclick="setActive(this)">అంతర్జాతీయం</a>
+            <a href="#" target="_blank" class="cat-item" onclick="setActive(this)">రాజకీయాలు</a>
+            <a href="#" target="_blank" class="cat-item" onclick="setActive(this)">ఆరోగ్యం</a>
+            <a href="#" target="_blank" class="cat-item" onclick="setActive(this)">ఆటలు</a>
+            <a href="#" target="_blank" class="cat-item" onclick="setActive(this)">వాతావరణం</a>
+        </div>
+    </div>
+
+    <!-- Advertisement Marquee -->
+    <div class="ad-marquee">
+        <div class="marquee-content">
+            For Advertisements contact: 📞 [Your Contact Number] ☎
+        </div>
+    </div>
+
+    <!-- Control Bar: Page Navigation, Edition Selector, Clipper, PDF -->
+    <div class="control-bar">
+        <div class="page-indicator" id="pageIndicator">Page 1</div>
+        <button id="btnPrev" onclick="changePage(-1)"><i class="fa-solid fa-arrow-left"></i></button>
+        <button id="btnNext" onclick="changePage(1)"><i class="fa-solid fa-arrow-right"></i></button>
+        <button id="btnEdition" onclick="openEditionSelector()">📰</button>
+        <button id="btnCut" onclick="toggleClipper()">✂️</button>
+        <a id="btnPdf" href="#" target="_blank" class="pdf-btn">PDF</a>
+    </div>
+
+    <!-- Newspaper Viewer Container -->
+    <div class="viewer-container" id="viewerContainer">
+        <!-- Left Arrow -->
+        <button class="nav-arrow left-arrow" onclick="changePage(-1)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <!-- Main Page Image -->
+        <img id="pageImage" src="" alt="News Page" loading="lazy">
+        
+        <!-- Right Arrow -->
+        <button class="nav-arrow right-arrow" onclick="changePage(1)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Edition Selector Modal -->
+    <div id="editionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditionSelector()">&times;</span>
+            <h3>Select Edition</h3>
+            <select id="dateSelect" onchange="loadSelectedEdition()">
+            </select>
+        </div>
+    </div>
+
+    <!-- About Us Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeInfoModal('aboutModal')">&times;</span>
+            <h3>ℹ️ About Us</h3>
+            <div class="info-text">
+                <p>tom-city-edition.in is a Telugu online e-paper dedicated to delivering fast, reliable news to readers in their own language.</p>
+                <p>It focuses on local news from Tom City and surrounding areas, ensuring regional issues and voices are highlighted.</p>
+                <p>At the same time, it covers major national developments from across India, helping readers stay informed about politics, economy, technology, and society.</p>
+                <p>International news is also included so Telugu readers can easily follow important global events without language barriers.</p>
+                <p>The platform aims to provide clear, unbiased coverage with a special emphasis on accuracy and credibility.</p>
+                <p>Designed as a digital e-paper, it offers a newspaper-like reading experience that works smoothly on mobiles, tablets, and desktops.</p>
+                <p>The vision of tom-city-edition.in is to make quality journalism accessible to every Telugu speaker, wherever they live.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Us Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeInfoModal('contactModal')">&times;</span>
+            <h3>📞 Contact Us</h3>
+            <div class="info-text">
+                <p>For any news, feedback, related to Tom City Edition Telugu e‑paper, please contact us using the details below.</p>
+                <p><strong>Email:</strong> contact@tom-city-edition.in<br>
+                <strong>Phone / WhatsApp:</strong> [Your Contact Number]</p>
+                <p>We welcome story tips, corrections, partnership proposals, and general questions from our readers.</p>
+                <p>Your suggestions help us improve our coverage and serve the Telugu community better.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advertise Modal -->
+    <div id="advertiseModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeInfoModal('advertiseModal')">&times;</span>
+            <h3>📢 Advertise</h3>
+            <div class="info-text">
+                <p>For advertising enquiries related to Tom City Edition Telugu e‑paper, please contact us using the details below.</p>
+                <p><strong>Email:</strong> ads@tom-city-edition.in<br>
+                <strong>Phone / WhatsApp:</strong> [Your Contact Number]</p>
+                <p>We offer competitive advertising rates and packages for businesses looking to reach Telugu-speaking audiences.</p>
+                <p>Contact us to discuss custom advertising solutions that fit your needs and budget.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeInfoModal('privacyModal')">&times;</span>
+            <h3>🔒 Privacy Policy</h3>
+            <div class="info-text">
+                <p>Tom City Edition respects your privacy and is committed to protecting it.</p>
+                <p>This website is designed only to display Telugu news and related content.</p>
+                <p>We do not require users to create an account, log in, or share any personal information to read our e‑paper.</p>
+                <p>We do not intentionally collect, store, or sell any personal data such as names, email addresses, phone numbers, or location details.</p>
+                <p>Any information you choose to share with us voluntarily (for example, when contacting us by email or phone) will be used only to respond to your enquiry and will not be shared with third parties without your consent, except if required by law.</p>
+                <p>Our website may be hosted on third‑party servers or may use standard web technologies (such as basic server logs) for security and performance, but we do not use this information to identify individual users.</p>
+                <p>If we ever change our data practices in the future, we will update this Privacy Policy and clearly inform users on this page.</p>
+                <p>By using this website, you agree to this Privacy Policy.</p>
+                <p>If you have any questions, you can contact us at contact@tom-city-edition.in</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clipper Overlay (For Cropping & Sharing) -->
+    <div id="clipperOverlay" class="clipper-overlay">
+        <div class="clipper-header">
+            <div class="header-spacer"></div>
+            <img src="assets/logo.png" alt="Tom City Edition" class="clipper-logo">
+            <button onclick="toggleClipper()" class="clipper-close">&times;</button>
+        </div>
+
+        <div class="clipper-body">
+            <img id="clipperImage" src="" style="max-width: 100%; display: block;">
+        </div>
+
+        <div class="clipper-controls">
+            <button class="action-btn share-btn" onclick="shareClip()">
+                <i class="fa-solid fa-share-nodes"></i> Share / WhatsApp
+            </button>
+            <button class="action-btn download-btn" onclick="downloadClip()">
+                <i class="fa-solid fa-download"></i> Download
+            </button>
+        </div>
+        
+        <div class="clipper-footer-text">
+            Read full NEWS at tom-city-edition.in | Copyright © 2026 Tom City Edition | Built by html-ramu
+        </div>
+    </div>
+
+    <!-- Static Footer -->
+    <div class="static-footer">
+        <p>Tom City Edition - Quality Telugu Journalism</p>
+        <p>Copyright © tom-city-edition.in <br> All rights reserved</p>
+        <p class="dev-credit">Designed & Developed by html-ramu</p>
+    </div>
+    
+    <!-- Cropper.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Main Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
