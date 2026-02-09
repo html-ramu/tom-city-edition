@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'uploads/**.pdf'
+      - 'scripts/**'
 
 # Give GitHub Actions permission to commit changes
 permissions:
@@ -19,28 +20,28 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Setup Python
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # Step 3: Install required tools
+      # Step 2: Install required tools (Added pdf2image here!)
       - name: 🛠️ Install Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils
-          pip install Pillow
+          pip install Pillow pdf2image
 
-      # Step 4: Run the processing script
+      # Step 3: Run the processing script
       - name: ⚙️ Run Processing Script
         run: python scripts/process_pdf.py
 
-      # Step 5: Commit and push changes
+      # Step 4: Commit and push changes
       - name: 💾 Save Changes
         run: |
           git config --global user.name "Tom City Robot"
           git config --global user.email "robot@tom-city-edition.in"
-          git add papers/ app.js uploads/ index.html assets/
+          git pull
+          git add papers/ app.js assets/ index.html
           git commit -m "🤖 Auto-published edition $(date +'%d-%m-%Y')" || echo "No changes to commit"
           git push
