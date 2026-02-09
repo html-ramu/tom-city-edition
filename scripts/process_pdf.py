@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
 """
-TOM CITY EDITION - PDF PROCESSOR (IMPROVED)
-================================
-This script automatically processes uploaded PDF newspapers:
-1. Converts PDF pages to PNG images
-2. Creates edition folder in papers/
-3. Generates WhatsApp preview image
-4. Updates app.js with new edition data (or updates existing entry)
-5. Updates index.html social meta tags
-
-Built by: html-ramu
-Version: 2.0 (Fixed duplicate entry issue)
+TOM CITY EDITION - PDF PROCESSOR (v3.1)
+=======================================
+1. Converts PDF to Images
+2. Creates Edition Folder
+3. Generates WhatsApp Preview (Max 200KB JPG)
+4. Updates app.js automatically
 """
 
 import os
 import sys
 import shutil
-import subprocess
 import glob
 import re
-from PIL import Image
+import datetime
+from pdf2image import convert_from_path
+from PIL import Image, ImageDraw, ImageFont
 
 # ===================================
 # CONFIGURATION
@@ -29,270 +25,170 @@ UPLOADS_DIR = "uploads"
 PAPERS_DIR = "papers"
 ASSETS_DIR = "assets"
 APP_JS_FILE = "app.js"
-INDEX_HTML_FILE = "index.html"
-DOMAIN_URL = "https://tom-city-edition.in"
+THEME_COLOR = "#2f96f0"  # Tom City Blue
 
 # ===================================
-# MAIN PROCESSING FUNCTION
+# MAIN LOGIC
 # ===================================
 
 def main():
-    """Main processing workflow"""
-    print("=" * 50)
-    print("TOM CITY EDITION - PDF PROCESSOR v2.0")
-    print("=" * 50)
+    print("🚀 Starting Tom City Processor...")
     
-    # 1. Find PDF in uploads folder
+    # 1. Find Uploaded PDF
     pdfs = glob.glob(os.path.join(UPLOADS_DIR, "*.pdf"))
     if not pdfs:
-        print("❌ No PDF found in uploads/ folder.")
-        print("📝 Please upload a PDF named: DD-MM-YYYY.pdf")
+        print("❌ No PDF found in uploads/")
         return
 
     pdf_path = pdfs[0]
     filename = os.path.basename(pdf_path)
-    date_str = filename.replace(".pdf", "")
     
-    print(f"\n📰 Processing Edition: {date_str}")
-    print(f"📄 PDF File: {filename}")
-
-    # 2. Validate date format
-    if not validate_date_format(date_str):
-        print(f"❌ Invalid filename format: {filename}")
-        print("📝 Please use format: DD-MM-YYYY.pdf (e.g., 08-02-2026.pdf)")
+    # Extract Date from filename (DD-MM-YYYY)
+    match = re.search(r"(\d{2}-\d{2}-\d{4})", filename)
+    if not match:
+        print("❌ Filename must be DD-MM-YYYY.pdf")
         return
-
-    # 3. Create output directory
-    output_dir = os.path.join(PAPERS_DIR, date_str)
-    if os.path.exists(output_dir):
-        print(f"⚠️  Edition folder already exists. Removing old version...")
-        shutil.rmtree(output_dir)
+        
+    date_str = match.group(1)
+    print(f"📅 Processing Edition: {date_str}")
     
-    os.makedirs(output_dir)
-    print(f"✅ Created folder: {output_dir}")
+    # 2. Create Edition Folder
+    edition_dir = os.path.join(PAPERS_DIR, date_str)
+    os.makedirs(edition_dir, exist_ok=True)
+    
+    # Move PDF to edition folder
+    final_pdf_path = os.path.join(edition_dir, "full.pdf")
+    shutil.copy(pdf_path, final_pdf_path)
+    
+    # 3. Convert Pages to Images
+    print("📸 Converting PDF pages to Images...")
+    # Lower DPI slightly for speed/size (150 is good for screens)
+    images = convert_from_path(final_pdf_path, dpi=150, fmt="png")
+    
+    total_pages = len(images)
+    
+    # Save each page
+    for i, img in enumerate(images):
+        page_num = i + 1
+        img_path = os.path.join(edition_dir, f"{page_num}.png")
+        img.save(img_path, "PNG", optimize=True)
+        print(f"   - Saved Page {page_num}")
 
-    # 4. Convert PDF to images
-    print("\n🖼️  Converting PDF to images...")
-    try:
-        convert_pdf_to_images(pdf_path, output_dir)
-    except Exception as e:
-        print(f"❌ Error converting PDF: {e}")
-        return
+    # 4. Generate WhatsApp Preview Card (Strict 200KB Limit)
+    print("🎨 Generating WhatsApp Preview Card...")
+    preview_path = os.path.join(edition_dir, "preview.jpg")
+    generate_preview_card(images[0], preview_path, date_str)
+    
+    # Copy preview to assets for global link sharing
+    global_preview = os.path.join(ASSETS_DIR, "latest-cover.jpg")
+    shutil.copy(preview_path, global_preview)
 
-    # 5. Rename and count images
-    generated_images = rename_images(output_dir)
-    page_count = len(generated_images)
-    print(f"✅ Generated {page_count} page(s)")
-
-    # 6. Create WhatsApp preview
-    if generated_images:
-        print("\n📱 Creating WhatsApp preview...")
-        create_smart_preview(date_str, generated_images[0])
-
-    # 7. Move PDF to target folder
-    target_pdf = os.path.join(output_dir, "full.pdf")
-    shutil.move(pdf_path, target_pdf)
-    print(f"✅ Moved PDF to: {target_pdf}")
-
-    # 8. Update app.js (IMPROVED - handles duplicates)
-    print("\n📝 Updating app.js...")
-    update_app_js(date_str, page_count)
-
-    # 9. Clean up uploads folder
-    cleanup_uploads_folder()
-
-    print("\n" + "=" * 50)
-    print("✅ PROCESSING COMPLETE!")
-    print("=" * 50)
-    print(f"📰 Edition: {date_str}")
-    print(f"📄 Pages: {page_count}")
-    print(f"📁 Folder: {output_dir}")
-    print("🚀 Changes ready to commit and push!")
+    # 5. Update app.js
+    update_app_js(date_str, total_pages)
+    
+    # 6. Cleanup
+    os.remove(pdf_path)
+    print("✅ Done! PDF processed and Website updated.")
 
 # ===================================
-# HELPER FUNCTIONS
+# PREVIEW GENERATOR (The Magic Part)
 # ===================================
 
-def validate_date_format(date_str):
+def generate_preview_card(first_page_img, output_path, date_text):
     """
-    Validate date format is DD-MM-YYYY
-    Returns: True if valid, False otherwise
-    """
-    pattern = r'^\d{2}-\d{2}-\d{4}$'
-    return bool(re.match(pattern, date_str))
-
-def convert_pdf_to_images(pdf_path, output_dir):
-    """
-    Convert PDF to PNG images using pdftoppm
-    Args:
-        pdf_path: Path to PDF file
-        output_dir: Directory to save images
-    """
-    # Use pdftoppm to convert PDF pages to PNG
-    # Output format: page-1.png, page-2.png, etc.
-    subprocess.run([
-        "pdftoppm",
-        "-png",
-        "-r", "200",  # 200 DPI for good quality
-        pdf_path,
-        os.path.join(output_dir, "page")
-    ], check=True)
-
-def rename_images(output_dir):
-    """
-    Rename generated images from page-1.png to 1.png, page-2.png to 2.png, etc.
-    Args:
-        output_dir: Directory containing images
-    Returns:
-        List of final image paths
-    """
-    generated_images = sorted(glob.glob(os.path.join(output_dir, "*.png")))
-    final_images = []
+    Creates a styled social media poster:
+    [ HEADER: Date | Tom City Edition ]
+    [       BIG IMAGE OF PAGE 1       ]
+    [ FOOTER: Read at tom-city.in     ]
     
-    for i, img_path in enumerate(generated_images):
-        new_name = f"{i+1}.png"
-        new_path = os.path.join(output_dir, new_name)
-        os.rename(img_path, new_path)
-        final_images.append(new_path)
-    
-    return final_images
-
-def create_smart_preview(date_str, source_image_path):
+    * STRICTLY enforces < 200KB file size
     """
-    Create optimized preview image for WhatsApp/social sharing
-    - Crops top 45% of first page
-    - Converts to JPG for better compression
-    - Optimizes to ~200KB for fast loading
     
-    Args:
-        date_str: Edition date (DD-MM-YYYY)
-        source_image_path: Path to first page image
-    """
-    target_cover = os.path.join(ASSETS_DIR, "latest-cover.jpg")
+    # 1. Setup Canvas
+    card_w, card_h = 800, 1000
+    card = Image.new("RGB", (card_w, card_h), "white")
+    draw = ImageDraw.Draw(card)
     
+    # 2. Try to load fonts
     try:
-        with Image.open(source_image_path) as img:
-            width, height = img.size
-            
-            # Crop top 45% (newspaper header and main story)
-            crop_height = int(height * 0.45)
-            cropped_img = img.crop((0, 0, width, crop_height))
-            
-            # Convert to RGB (required for JPG)
-            cropped_img = cropped_img.convert("RGB")
-            
-            # Save with optimization
-            # Quality=70 ensures size is small but clear
-            cropped_img.save(target_cover, "JPEG", optimize=True, quality=70)
-            
-            print(f"✅ Created WhatsApp preview (Top 45% crop, optimized JPG)")
+        font_lg = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 60)
+        font_sm = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 30)
+    except:
+        font_lg = ImageFont.load_default()
+        font_sm = ImageFont.load_default()
+
+    # 3. Draw Header (Blue Box)
+    header_h = 120
+    draw.rectangle([(0, 0), (card_w, header_h)], fill=THEME_COLOR)
+    draw.text((card_w/2, 60), f"🗓 {date_text}", font=font_lg, fill="white", anchor="mm")
     
-    except Exception as e:
-        print(f"⚠️  Warning: Could not create preview image: {e}")
-        return
-
-    # Update index.html social tags
-    update_social_tags(date_str)
-
-def update_social_tags(date_str):
-    """
-    Update og:image meta tag in index.html
-    Args:
-        date_str: Edition date for cache busting
-    """
-    try:
-        with open(INDEX_HTML_FILE, "r", encoding="utf-8") as f:
-            html_content = f.read()
-
-        # Create new image URL with version parameter for cache busting
-        new_image_url = f"{DOMAIN_URL}/assets/latest-cover.jpg?v={date_str}"
+    # 4. Process Page 1 Image
+    target_w = 700
+    aspect_ratio = first_page_img.height / first_page_img.width
+    target_h = int(target_w * aspect_ratio)
+    
+    # Cap height
+    max_paper_h = 750
+    if target_h > max_paper_h:
+        target_h = max_paper_h
+        target_w = int(target_h / aspect_ratio)
         
-        # Regex to replace og:image content
-        pattern_og = r'(<meta property="og:image" content=")(.*?)(")'
-        
-        if re.search(pattern_og, html_content):
-            new_content = re.sub(pattern_og, r'\1' + new_image_url + r'\3', html_content)
-            
-            with open(INDEX_HTML_FILE, "w", encoding="utf-8") as f:
-                f.write(new_content)
-            
-            print(f"✅ Updated index.html og:image tag")
-        else:
-            print("⚠️  Warning: Could not find og:image meta tag in index.html")
+    paper_resized = first_page_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
     
-    except Exception as e:
-        print(f"⚠️  Warning: Could not update social tags: {e}")
+    # Draw paper with border
+    paper_x = (card_w - target_w) // 2
+    paper_y = header_h + 30
+    draw.rectangle([(paper_x-2, paper_y-2), (paper_x+target_w+2, paper_y+target_h+2)], fill="#cccccc")
+    card.paste(paper_resized, (paper_x, paper_y))
+    
+    # 5. Draw Footer
+    footer_y = card_h - 50
+    draw.rectangle([(0, card_h - 100), (card_w, card_h)], fill="#222222")
+    draw.text((card_w/2, footer_y), "🔗 Read Full News: tom-city-edition.in", font=font_sm, fill="white", anchor="mm")
 
-def update_app_js(date_key, pages):
-    """
-    Add or update edition entry in app.js
-    IMPROVED: Removes duplicate entries and updates existing ones
-    
-    Args:
-        date_key: Edition date (DD-MM-YYYY)
-        pages: Number of pages in edition
-    """
+    # 6. Save with Size Check (Max 200KB Loop)
+    quality = 95
+    while True:
+        card.save(output_path, "JPEG", quality=quality, optimize=True)
+        file_size_kb = os.path.getsize(output_path) / 1024
+        
+        if file_size_kb <= 200:
+            print(f"   - Preview saved: {file_size_kb:.1f}KB (Quality: {quality})")
+            break
+            
+        # If too big, lower quality and try again
+        print(f"   - File too big ({file_size_kb:.1f}KB). Compressing...")
+        quality -= 5
+        
+        if quality < 10: # Safety break
+            break
+
+# ===================================
+# APP.JS UPDATER
+# ===================================
+
+def update_app_js(date_key, total_pages):
     try:
         with open(APP_JS_FILE, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Create new entry
-        new_entry = f'    "{date_key}": {{ pages: {pages}, pdf: "full.pdf" }},'
-        marker = "// ROBOT_ENTRY_POINT"
-
-        # Check if marker exists
-        if marker not in content:
-            print(f"❌ Error: ROBOT_ENTRY_POINT marker not found in {APP_JS_FILE}")
-            return
-
-        # Check if entry already exists and remove it
-        entry_exists = f'"{date_key}"' in content
-        
-        if entry_exists:
-            # Remove old entry using regex
-            # Pattern matches: "DD-MM-YYYY": { pages: X, pdf: "full.pdf" },
-            pattern = rf'    "{re.escape(date_key)}": \{{ pages: \d+, pdf: "full\.pdf" \}},?\n?'
-            content = re.sub(pattern, '', content)
-            print(f"🔄 Updating existing entry for {date_key}")
+        # Check if entry already exists
+        if f'"{date_key}":' in content:
+            print(f"⚠️ Entry for {date_key} already exists. Updating...")
+            pattern = rf'"{date_key}": \{{ pages: \d+, pdf: "full\.pdf" \}},'
+            replacement = f'"{date_key}": {{ pages: {total_pages}, pdf: "full.pdf" }},'
+            new_content = re.sub(pattern, replacement, content)
         else:
-            print(f"✅ Adding new entry for {date_key}")
-        
-        # Insert new entry after marker
-        new_content = content.replace(marker, marker + "\n" + new_entry)
-        
+            print(f"✨ Adding new entry for {date_key}")
+            marker = "// ROBOT_ENTRY_POINT"
+            new_entry = f'    "{date_key}": {{ pages: {total_pages}, pdf: "full.pdf" }},'
+            new_content = content.replace(marker, marker + "\n" + new_entry)
+
         with open(APP_JS_FILE, "w", encoding="utf-8") as f:
             f.write(new_content)
-        
-        print(f"✅ Successfully updated app.js")
-    
+            
     except Exception as e:
         print(f"❌ Error updating app.js: {e}")
 
-def cleanup_uploads_folder():
-    """
-    Clean up uploads folder after processing
-    Removes all files except .gitkeep
-    """
-    try:
-        for file in os.listdir(UPLOADS_DIR):
-            if file != ".gitkeep":
-                file_path = os.path.join(UPLOADS_DIR, file)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-        print("✅ Cleaned uploads folder")
-    except Exception as e:
-        print(f"⚠️  Warning: Could not clean uploads folder: {e}")
-
-# ===================================
-# RUN SCRIPT
-# ===================================
-
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\n⚠️  Process interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
-        sys.exit(1)
+    main()
