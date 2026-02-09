@@ -10,10 +10,10 @@ const REPO_URL = "https://tom-city-edition.in";
 // EDITION DATA
 // ===================================
 // Each edition entry format: "DD-MM-YYYY": { pages: X, pdf: "full.pdf" }
-// ROBOT_ENTRY_POINT is where GitHub Actions will insert new editions automatically
 
 const editions = {
     // ROBOT_ENTRY_POINT
+    "08-02-2026": { pages: 5, pdf: "full.pdf" },
     "07-02-2026": { pages: 5, pdf: "full.pdf" },
 };
 
