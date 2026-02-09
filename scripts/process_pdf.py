@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-TOM CITY EDITION - PDF PROCESSOR
+TOM CITY EDITION - PDF PROCESSOR (IMPROVED)
 ================================
 This script automatically processes uploaded PDF newspapers:
 1. Converts PDF pages to PNG images
 2. Creates edition folder in papers/
 3. Generates WhatsApp preview image
-4. Updates app.js with new edition data
+4. Updates app.js with new edition data (or updates existing entry)
 5. Updates index.html social meta tags
 
 Built by: html-ramu
+Version: 2.0 (Fixed duplicate entry issue)
 """
 
 import os
@@ -38,7 +39,7 @@ DOMAIN_URL = "https://tom-city-edition.in"
 def main():
     """Main processing workflow"""
     print("=" * 50)
-    print("TOM CITY EDITION - PDF PROCESSOR")
+    print("TOM CITY EDITION - PDF PROCESSOR v2.0")
     print("=" * 50)
     
     # 1. Find PDF in uploads folder
@@ -93,7 +94,7 @@ def main():
     shutil.move(pdf_path, target_pdf)
     print(f"✅ Moved PDF to: {target_pdf}")
 
-    # 8. Update app.js
+    # 8. Update app.js (IMPROVED - handles duplicates)
     print("\n📝 Updating app.js...")
     update_app_js(date_str, page_count)
 
@@ -224,7 +225,9 @@ def update_social_tags(date_str):
 
 def update_app_js(date_key, pages):
     """
-    Add new edition entry to app.js
+    Add or update edition entry in app.js
+    IMPROVED: Removes duplicate entries and updates existing ones
+    
     Args:
         date_key: Edition date (DD-MM-YYYY)
         pages: Number of pages in edition
@@ -242,17 +245,25 @@ def update_app_js(date_key, pages):
             print(f"❌ Error: ROBOT_ENTRY_POINT marker not found in {APP_JS_FILE}")
             return
 
-        # Check if entry already exists
-        if f'"{date_key}"' in content:
-            print(f"ℹ️  Entry for {date_key} already exists in app.js (skipping)")
+        # Check if entry already exists and remove it
+        entry_exists = f'"{date_key}"' in content
+        
+        if entry_exists:
+            # Remove old entry using regex
+            # Pattern matches: "DD-MM-YYYY": { pages: X, pdf: "full.pdf" },
+            pattern = rf'    "{re.escape(date_key)}": \{{ pages: \d+, pdf: "full\.pdf" \}},?\n?'
+            content = re.sub(pattern, '', content)
+            print(f"🔄 Updating existing entry for {date_key}")
         else:
-            # Insert new entry after marker
-            new_content = content.replace(marker, marker + "\n" + new_entry)
-            
-            with open(APP_JS_FILE, "w", encoding="utf-8") as f:
-                f.write(new_content)
-            
-            print(f"✅ Added {date_key} to app.js")
+            print(f"✅ Adding new entry for {date_key}")
+        
+        # Insert new entry after marker
+        new_content = content.replace(marker, marker + "\n" + new_entry)
+        
+        with open(APP_JS_FILE, "w", encoding="utf-8") as f:
+            f.write(new_content)
+        
+        print(f"✅ Successfully updated app.js")
     
     except Exception as e:
         print(f"❌ Error updating app.js: {e}")
