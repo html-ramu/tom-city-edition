@@ -457,7 +457,7 @@ function getBrandedCanvas() {
     ctx.drawImage(cropCanvas, cropX, headerHeight);
 
     // Draw Footer Background
-    ctx.fillStyle = "#2f96f0"; // Theme color
+    ctx.fillStyle = "#2a2a2a"; // Light black
     ctx.fillRect(0, finalHeight - footerHeight, finalWidth, footerHeight);
 
     // Draw Footer Text
@@ -470,7 +470,7 @@ function getBrandedCanvas() {
 
     const fontSub = Math.round(16 * scale);
     ctx.font = `normal ${fontSub}px Arial`;
-    ctx.fillText("Built by html-ramu", finalWidth / 2, finalHeight - (footerHeight * 0.25));
+    ctx.fillText("Designed & Developed by html-ramu", finalWidth / 2, finalHeight - (footerHeight * 0.25));
 
     return finalCanvas;
 }
